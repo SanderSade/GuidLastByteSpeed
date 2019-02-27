@@ -100,39 +100,37 @@ namespace GuidHandlingTest
 				return result;
 			}
 
-			/// <summary>
-			///     From https://stackoverflow.com/a/16222886/3248515, modified
-			/// </summary>
-			private static Func<S, T> CreateGetter<S, T>()
-			{
-				var field = typeof(Guid).GetField("_k", BindingFlags.NonPublic | BindingFlags.Instance);
-				Debug.Assert(field != null, nameof(field) + " != null");
-				var methodName = field.ReflectedType.FullName + ".get_" + field.Name;
-				var setterMethod = new DynamicMethod(methodName, typeof(T), new Type[1] {typeof(S)}, true);
-				var gen = setterMethod.GetILGenerator();
-				if (field.IsStatic)
-				{
-					gen.Emit(OpCodes.Ldsfld, field);
-				}
-				else
-				{
-					gen.Emit(OpCodes.Ldarg_0);
-					gen.Emit(OpCodes.Ldfld, field);
-				}
-
-				gen.Emit(OpCodes.Ret);
-				return (Func<S, T>) setterMethod.CreateDelegate(typeof(Func<S, T>));
-			}
-
-
 			[Benchmark]
 			public List<byte> ViaDelegate()
 			{
+				//     From https://stackoverflow.com/a/16222886/3248515, modified
+				Func<TS, T> CreateGetter<TS, T>()
+				{
+					var field = typeof(Guid).GetField("_k", BindingFlags.NonPublic | BindingFlags.Instance);
+					Debug.Assert(field != null, nameof(field) + " != null");
+					var methodName = field.ReflectedType.FullName + ".get_" + field.Name;
+					var setterMethod = new DynamicMethod(methodName, typeof(T), new Type[1] { typeof(TS) }, true);
+					var gen = setterMethod.GetILGenerator();
+					if (field.IsStatic)
+					{
+						gen.Emit(OpCodes.Ldsfld, field);
+					}
+					else
+					{
+						gen.Emit(OpCodes.Ldarg_0);
+						gen.Emit(OpCodes.Ldfld, field);
+					}
+
+					gen.Emit(OpCodes.Ret);
+					return (Func<TS, T>)setterMethod.CreateDelegate(typeof(Func<TS, T>));
+				}
+
 				var getter = CreateGetter<Guid, byte>();
 
 				var result = new List<byte>(Count);
 				foreach (var guid in _guids)
 					result.Add(getter.Invoke(guid));
+
 				return result;
 			}
 
