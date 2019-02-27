@@ -1,5 +1,8 @@
 ### Testing different methods for getting the last byte from GUID from performance perspective
 
+In a high-performance application we needed to know the last byte of GUID, used for table sharding. These are the results of several different approaches, some of which probably could be optimized further.
+
+See [here](https://github.com/SanderSade/GuidLastByteSpeed/blob/master/GuidHandlingTest/Program.cs) for the methods.
 
 ``` ini
 
